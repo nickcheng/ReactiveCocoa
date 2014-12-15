@@ -7,11 +7,8 @@ Pod::Spec.new do |s|
   s.source       = { :git => "https://github.com/ReactiveCocoa/ReactiveCocoa.git", :tag => "v2.4.2" }
   s.license      = 'MIT'
   s.description  = "ReactiveCocoa (RAC) is an Objective-C framework for Functional Reactive Programming. It provides APIs for composing and transforming streams of values."
- 
-  s.requires_arc = true
-  s.ios.deployment_target = '5.0'
-  s.osx.deployment_target = '10.7'
-  s.compiler_flags = '-DOS_OBJECT_USE_OBJC=0'
+  s.ios.deployment_target = '7.0'
+  s.osx.deployment_target = '10.9'
   s.default_subspec = 'UI'
 
   s.subspec 'no-arc' do |sp|
