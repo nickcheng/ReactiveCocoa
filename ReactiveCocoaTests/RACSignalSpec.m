@@ -3196,7 +3196,7 @@ qck_describe(@"-collect", ^{
 	});
 });
 
-qck_describe(@"-bufferWithTime:", ^{
+qck_describe(@"-bufferWithTime:onScheduler:", ^{
 	__block RACTestScheduler *scheduler;
 
 	__block RACSubject *input;
@@ -3662,6 +3662,31 @@ qck_describe(@"-groupBy:", ^{
 
 		expect(@(erroneousGroupedSignalCount)).to(equal(@(groupedSignalCount)));
 	});
+
+
+	qck_it(@"should send completed in the order grouped signals were created.", ^{
+		RACSubject *subject = [RACReplaySubject subject];
+
+		NSMutableArray *startedSignals = [NSMutableArray array];
+		NSMutableArray *completedSignals = [NSMutableArray array];
+		[[subject groupBy:^(NSNumber *number) {
+			return @(number.integerValue % 4);
+		}] subscribeNext:^(RACGroupedSignal *groupedSignal) {
+			[startedSignals addObject:groupedSignal];
+
+			[groupedSignal subscribeCompleted:^{
+				[completedSignals addObject:groupedSignal];
+			}];
+		}];
+
+		for (NSInteger i = 0; i < 20; i++)
+		{
+			[subject sendNext:@(i)];
+		}
+		[subject sendCompleted];
+
+		expect(completedSignals).to(equal(startedSignals));
+	});
 });
 
 qck_describe(@"starting signals", ^{
@@ -3878,6 +3903,77 @@ qck_describe(@"-reduceApply", ^{
 		NSArray *expected = @[ @3, @7 ];
 
 		expect(results).to(equal(expected));
+	});
+});
+
+describe(@"-deliverOnMainThread", ^{
+	void (^dispatchSyncInBackground)(dispatch_block_t) = ^(dispatch_block_t block) {
+		dispatch_group_t group = dispatch_group_create();
+		dispatch_group_async(group, dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), block);
+		dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+	};
+
+	beforeEach(^{
+		expect(@(NSThread.isMainThread)).to(beTruthy());
+	});
+
+	it(@"should deliver events immediately when on the main thread", ^{
+		RACSubject *subject = [RACSubject subject];
+		NSMutableArray *values = [NSMutableArray array];
+
+		[[subject deliverOnMainThread] subscribeNext:^(id value) {
+			[values addObject:value];
+		}];
+
+		[subject sendNext:@0];
+		expect(values).to(equal(@[ @0 ]));
+
+		[subject sendNext:@1];
+		[subject sendNext:@2];
+		expect(values).to(equal(@[ @0, @1, @2 ]));
+	});
+
+	it(@"should enqueue events sent from the background", ^{
+		RACSubject *subject = [RACSubject subject];
+		NSMutableArray *values = [NSMutableArray array];
+
+		[[subject deliverOnMainThread] subscribeNext:^(id value) {
+			[values addObject:value];
+		}];
+
+		dispatchSyncInBackground(^{
+			[subject sendNext:@0];
+		});
+
+		expect(values).to(equal(@[]));
+		expect(values).toEventually(equal(@[ @0 ]));
+
+		dispatchSyncInBackground(^{
+			[subject sendNext:@1];
+			[subject sendNext:@2];
+		});
+
+		expect(values).to(equal(@[ @0 ]));
+		expect(values).toEventually(equal(@[ @0, @1, @2 ]));
+	});
+
+	it(@"should enqueue events sent from the main thread after events from the background", ^{
+		RACSubject *subject = [RACSubject subject];
+		NSMutableArray *values = [NSMutableArray array];
+
+		[[subject deliverOnMainThread] subscribeNext:^(id value) {
+			[values addObject:value];
+		}];
+
+		dispatchSyncInBackground(^{
+			[subject sendNext:@0];
+		});
+
+		[subject sendNext:@1];
+		[subject sendNext:@2];
+
+		expect(values).to(equal(@[]));
+		expect(values).toEventually(equal(@[ @0, @1, @2 ]));
 	});
 });
 
