@@ -176,28 +176,15 @@ a [stream](#streams):
    It is primarily used by the `-materialize` method of
    [RACSignal][RACSignal+Operations].
 
-## Asynchronous Backtraces
-
-Because RAC-based code often involves asynchronous work and queue-hopping, the
-framework supports [capturing asynchronous backtraces][RACBacktrace] to make debugging
-easier.
-
-On OS X, backtraces can be automatically captured from any code, including
-system libraries.
-
-On iOS, only queue hops from within RAC and your project will be captured (but
-the information is still valuable).
-
 [Design Guidelines]: DesignGuidelines.md
 [Haskell]: http://www.haskell.org
 [lazy-seq]: http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/lazy-seq
-[List]: http://www.haskell.org/ghc/docs/latest/html/libraries/base-4.6.0.1/Data-List.html
+[List]: https://downloads.haskell.org/~ghc/latest/docs/html/libraries/base-4.7.0.2/Data-List.html
 [Memory Management]: MemoryManagement.md
 [monads]: http://en.wikipedia.org/wiki/Monad_(functional_programming)
-[Monoid]: http://www.haskell.org/ghc/docs/latest/html/libraries/base-4.6.0.1/Data-Monoid.html#t:Monoid
-[MonadZip]: http://www.haskell.org/ghc/docs/latest/html/libraries/base-4.6.0.1/Control-Monad-Zip.html#t:MonadZip
+[Monoid]: http://downloads.haskell.org/~ghc/latest/docs/html/libraries/base-4.7.0.2/Data-Monoid.html
+[MonadZip]: http://downloads.haskell.org/~ghc/latest/docs/html/libraries/base-4.7.0.2/Control-Monad-Zip.html
 [NSButton+RACCommandSupport]: ../ReactiveCocoa/NSButton+RACCommandSupport.h
-[RACBacktrace]: ../ReactiveCocoa/RACBacktrace.h
 [RACCommand]: ../ReactiveCocoa/RACCommand.h
 [RACDisposable]: ../ReactiveCocoa/RACDisposable.h
 [RACEvent]: ../ReactiveCocoa/RACEvent.h
